@@ -1,0 +1,1 @@
+A template for a rust based CRUD server.

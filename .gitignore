@@ -1,0 +1,7 @@
+### Global ###
+## Directories
+.idea
+target
+
+## Files
+.DS_Store
