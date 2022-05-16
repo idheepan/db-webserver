@@ -23,10 +23,3 @@ pub struct NewSensorReading {
     pub temperature: f32,
     pub rhumidity: f32,
 }
-// #[derive(Deserialize, AsChangeset, Debug)]
-// #[serde(crate = "rocket::serde")]
-// #[table_name = "sensor_readings_table"]
-// pub struct UpdatedArtist {
-//     pub name: Option<String>,
-//     pub description: Option<String>,
-// }
