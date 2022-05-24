@@ -5,7 +5,8 @@ authors = ["idheepan@gmail.com>"]
 edition = "2021"
 
 [dependencies]
-rocket_cors = { git = "https://github.com/lawliet89/rocket_cors", branch = "master", default-features = false}
+rocket_cors = { git = "https://github.com/lawliet89/rocket_cors", branch = "master", default-features = false }
+# psychrometry = "0.2.0"
 
 [dependencies.chrono]
 version = "0.4"
@@ -13,7 +14,7 @@ features = ["serde"]
 
 [dependencies.diesel]
 version = "1.4.8"
-features = ["postgres", "chrono"] 
+features = ["postgres", "chrono"]
 
 [dependencies.rocket]
 version = "0.5.0-rc.2"

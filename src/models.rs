@@ -3,6 +3,7 @@ use rocket::serde::{Deserialize, Serialize};
 use diesel::{Insertable, Queryable};
 
 use crate::schema::data;
+// use crate::schema::data_en;
 use chrono::{DateTime, Utc};
 #[derive(Serialize, Queryable, Debug)]
 #[serde(crate = "rocket::serde")]
@@ -23,3 +24,14 @@ pub struct NewSensorReading {
     pub temperature: f32,
     pub rhumidity: f32,
 }
+
+// #[derive(Deserialize, Insertable, Debug)]
+// #[serde(crate = "rocket::serde")]
+// #[table_name = "data_en"]
+// pub struct NewSensorReadingWithEnthalpy {
+//     pub ts: DateTime<Utc>,
+//     pub sensor: i32,
+//     pub temperature: f32,
+//     pub rhumidity: f32,
+//     pub enthalpy: f32,
+// }
