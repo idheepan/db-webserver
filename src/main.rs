@@ -10,11 +10,14 @@ use rocket_cors::{AllowedHeaders, AllowedOrigins};
 use diesel::prelude::*;
 
 use db_webserver::{
-    models::{NewSensorReading, SensorReading},
-    schema::data,
+    models::{NewSensorReading, NewSensorReadingEntry, SensorReading},
+    schema::data_en,
     ApiError, PgConnection,
 };
 
+use psychrometry::psychrolib::{self, PsychrometryFunctions, UnitIndependent};
+use rocket::State;
+const AMB_PRESSURE: f64 = 101325_f64;
 // TODO: Retrieve a list of sensor readings between given times for one specific sensor.
 #[rocket::launch]
 fn rocket() -> _ {
@@ -33,7 +36,9 @@ fn rocket() -> _ {
     .unwrap();
 
     rocket::build()
-        // State
+        // States
+        .manage(psychrolib::SI {})
+        // Fairings
         .attach(PgConnection::fairing())
         // Routes
         .mount(
@@ -61,8 +66,8 @@ async fn retrieve_some(
 
     connection
         .run(move |c| {
-            data::table
-                .filter(data::ts.between(start_time, end_time))
+            data_en::table
+                .filter(data_en::ts.between(start_time, end_time))
                 .load(c)
         })
         .await
@@ -76,7 +81,7 @@ async fn retrieve_one(
     id: i32,
 ) -> Result<Json<SensorReading>, NotFound<Json<ApiError>>> {
     connection
-        .run(move |c| data::table.filter(data::id.eq(id)).first(c))
+        .run(move |c| data_en::table.filter(data_en::id.eq(id)).first(c))
         .await
         .map(Json)
         .map_err(|e| {
@@ -89,13 +94,31 @@ async fn retrieve_one(
 // TODO: When adding a new sensor reading calculate its enthalpy and add it to the column
 #[rocket::post("/", data = "<sensor_reading>")]
 async fn create(
+    state: &State<psychrolib::SI>,
     connection: PgConnection,
     sensor_reading: Json<NewSensorReading>,
 ) -> Result<Created<Json<SensorReading>>, Json<ApiError>> {
+    let incoming = sensor_reading.into_inner();
+    let temperature = incoming.temperature;
+    let rhumidity = incoming.rhumidity;
+    let hum_ratio = state
+        .get_hum_ratio_from_rel_hum(temperature as f64, rhumidity as f64, AMB_PRESSURE)
+        .unwrap();
+    let enthalpy = state
+        .get_moist_air_enthalpy(temperature as f64, hum_ratio)
+        .unwrap() as f32;
+
+    let new_reading = NewSensorReadingEntry {
+        ts: incoming.ts,
+        sensor: incoming.sensor,
+        temperature,
+        rhumidity,
+        enthalpy,
+    };
     connection
         .run(move |c| {
-            diesel::insert_into(data::table)
-                .values(&sensor_reading.into_inner())
+            diesel::insert_into(data_en::table)
+                .values(&new_reading)
                 .get_result(c)
         })
         .await

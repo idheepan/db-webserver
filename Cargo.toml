@@ -6,7 +6,7 @@ edition = "2021"
 
 [dependencies]
 rocket_cors = { git = "https://github.com/lawliet89/rocket_cors", branch = "master", default-features = false }
-# psychrometry = "0.2.0"
+psychrometry = "0.2.2"
 
 [dependencies.chrono]
 version = "0.4"
